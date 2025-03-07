@@ -5,9 +5,11 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
+import redisClient from "./config/redis.js";
 import authRoutes from "./routes/authRoutes.js";
-import confessionRoutes from "./routes/confessionRoutes.js"
-import secretRoutes from "./routes/messageRoutes.js"
+import confessionRoutes from "./routes/confessionRoutes.js";
+import secretRoutes from "./routes/messageRoutes.js"; // ✅ Updated Secret Routes
+
 // Load environment variables
 dotenv.config();
 
@@ -25,13 +27,24 @@ app.use(cookieParser());
 // Connect to MongoDB
 connectDB();
 
+// ✅ Check Redis Connection
+(async () => {
+  try {
+    await redisClient.ping();
+    console.log("✅ Redis is Ready!");
+  } catch (error) {
+    console.error("❌ Redis Ping Failed:", error);
+  }
+})();
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/confession", confessionRoutes);
-app.use("/api/secret", secretRoutes);
+app.use("/api/secret", secretRoutes); // ✅ Added Secret Message API
+
 // Default Route
 app.get("/", (req, res) => {
-  res.send("🔥 Authentication API is Running...");
+  res.send("🔥 Authentication & Secret Message API is Running...");
 });
 
 // Global Error Handler
